@@ -207,7 +207,6 @@ while True:
             print("third point")
             thirdPoint = [xPos, yPos]
         if(firstPoint and secondPoint and thirdPoint):
-
             cv2.circle(annotationsCanvas, (round(firstPoint[0]), round(firstPoint[1])), 10, (0, 0, 255), -1)
             cv2.circle(annotationsCanvas, (round(secondPoint[0]), round(secondPoint[1])), 10, (0, 0, 255), -1)
             cv2.circle(annotationsCanvas, (round(thirdPoint[0]), round(thirdPoint[1])), 10, (0, 0, 255), -1)

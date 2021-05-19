@@ -3,15 +3,17 @@ import numpy as np
 import time
 from collections import deque
 import numpy
-
+from numpy.polynomial import polynomial as P
 
 lowerBound = np.array([40, 50, 30])
 upperBound = np.array([90, 255, 255])
 ballPts = deque(maxlen=64)  # remember maximum 50 points
 yPos, xPos = -1, -1
 annotationsCanvas = np.zeros((1080, 1920, 3), np.uint8)
-cam = cv2.VideoCapture("ball_throw_3.mp4")
-out = cv2.VideoWriter('output.mp4', -1, 5.0, (1920, 1080))
+
+
+cam = cv2.VideoCapture("ball_throw_6.mp4")
+out = cv2.VideoWriter('output.mp4', -1, 8.0, (1920, 1080))
 kernelOpen = np.ones((5, 5))
 kernelClose = np.ones((20, 20))
 
@@ -99,50 +101,46 @@ def calc_parabola_vertex(x1, y1, x2, y2, x3, y3):
 
 
 def parabola(a, b, c, x):
-    return ((a * x**2) + (b * x) + c)
+    return a+b*x+c*x**2
 
 
 firstPoint = None
 secondPoint = None
 thirdPoint = None
 parabulaDrawn = False
-ballPoints = []
+ballPointsX = np.array([])
+ballPointsY = np.array([])
 captureBallXY = False
 while True:
     openCvShit(False)  # do all opencv shit without verbose display
-    key = cv2.waitKey(10)
-    if(key == ord('s')):
-        startCapturingBallXY = True
+    # key = cv2.waitKey(10)
+    # if(key == ord('s')):
+    #     startCapturingBallXY = True
 
     if(xPos != -1 or yPos != -1):
-        if(captureBallXY):
-            ballPts.append([xPos, yPos])
-        if(200 < xPos < 250):
-            print("first point")
-            firstPoint = [xPos, yPos]
-        if(600 < xPos < 650):
-            print("second point")
-            secondPoint = [xPos, yPos]
-        if(900 < xPos < 950):
-            print("third point")
-            thirdPoint = [xPos, yPos]
-        if(firstPoint and secondPoint and thirdPoint):
-
-            cv2.circle(annotationsCanvas, (round(firstPoint[0]), round(firstPoint[1])), 10, (0, 0, 255), -1)
-            cv2.circle(annotationsCanvas, (round(secondPoint[0]), round(secondPoint[1])), 10, (0, 0, 255), -1)
-            cv2.circle(annotationsCanvas, (round(thirdPoint[0]), round(thirdPoint[1])), 10, (0, 0, 255), -1)
+        if(xPos > 200):
+            ballPointsX = np.append(ballPointsX, xPos)
+            ballPointsY = np.append(ballPointsY, yPos)
+            # print(fit)
+            # cv2.circle(annotationsCanvas, (round(firstPoint[0]), round(firstPoint[1])), 10, (0, 0, 255), -1)
+            # cv2.circle(annotationsCanvas, (round(secondPoint[0]), round(secondPoint[1])), 10, (0, 0, 255), -1)
+            # cv2.circle(annotationsCanvas, (round(thirdPoint[0]), round(thirdPoint[1])), 10, (0, 0, 255), -1)
             print("got three points!!!!")
-            a, b, c = calc_parabola_vertex(firstPoint[0], firstPoint[1], secondPoint[0], secondPoint[1], thirdPoint[0], thirdPoint[1])
-            print("a = {0}, b = {1}, c = {2}".format(a, b, c))
-            if(not parabulaDrawn):
+            # a, b, c = calc_parabola_vertex(firstPoint[0], firstPoint[1], secondPoint[0], secondPoint[1], thirdPoint[0], thirdPoint[1])
+            # print("a = {0}, b = {1}, c = {2}".format(a, b, c))
+            if(len(ballPointsX) > 6):
+                fit = P.polyfit(ballPointsX, ballPointsY, 2)
                 parabulaDrawn = True
                 for x in range(xPos, 1920):
-                    y = parabola(a, b, c, x)
+                    y = parabola(fit[0], fit[1], fit[2], x)
+                    # y = parabola(a, b, c, x)
+                    # print("y = {}".format(y))
                     cv2.circle(annotationsCanvas, (round(x), round(y)), 10, (0, 0, 255), -1)
 
     img = cv2.addWeighted(img, 1, annotationsCanvas, 1, 0.0)
+    out.write(img)
     cv2.imshow("main", img)
-    # cv2.waitKey(10)
+    cv2.waitKey(10)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 cam.release()
