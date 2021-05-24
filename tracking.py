@@ -207,17 +207,15 @@ while True:
             print("third point")
             thirdPoint = [xPos, yPos]
         if(firstPoint and secondPoint and thirdPoint):
-            cv2.circle(annotationsCanvas, (round(firstPoint[0]), round(firstPoint[1])), 10, (0, 0, 255), -1)
-            cv2.circle(annotationsCanvas, (round(secondPoint[0]), round(secondPoint[1])), 10, (0, 0, 255), -1)
-            cv2.circle(annotationsCanvas, (round(thirdPoint[0]), round(thirdPoint[1])), 10, (0, 0, 255), -1)
             print("got three points!!!!")
             a, b, c = calc_parabola_vertex(firstPoint[0], firstPoint[1], secondPoint[0], secondPoint[1], thirdPoint[0], thirdPoint[1])
             print("a = {0}, b = {1}, c = {2}".format(a, b, c))
             if(not parabulaDrawn):
                 parabulaDrawn = True
-                for x in range(xPos, 1920):
+                for x in range(xPos, 1920, 1000):
                     y = parabola(a, b, c, x)
-                    cv2.circle(annotationsCanvas, (round(x), round(y)), 10, (0, 0, 255), -1)
+                    cv2.line(annotationsCanvas, (round(x), round(y)), lastXY, 10, (0, 0, 255), -1)
+                    lastXY = (x, y)
         lastTimeCalculated = time.time()
         # if(time.time() - lastTimeCalculated > 0.5):
         #     for i in range(0, 1920):
